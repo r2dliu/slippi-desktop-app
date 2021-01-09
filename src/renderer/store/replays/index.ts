@@ -10,10 +10,10 @@ import {
   generateSubFolderTree,
 } from "common/replayBrowser";
 import * as Comlink from "comlink";
-import { loadReplayFolder } from "@/workers/fileLoader.worker";
+import { processReplayFolder } from "@/workers/fileProcessor.worker";
 import { calculateGameStats } from "@/workers/gameStats.worker";
 import { StatsType } from "@slippi/slippi-js";
-import { shell } from "electron";
+import { shell, remote } from "electron";
 
 type StoreState = {
   loading: boolean;
@@ -45,7 +45,7 @@ type StoreReducers = {
   clearSelectedFile: () => Promise<void>;
   deleteFile: (filePath: string) => Promise<void>;
   loadDirectoryList: (folder: string) => Promise<void>;
-  loadFolder: (childPath?: string, forceReload?: boolean) => Promise<void>;
+  processFolder: (childPath?: string, forceReload?: boolean) => Promise<void>;
   toggleFolder: (fullPath: string) => void;
   setScrollRowItem: (offset: number) => void;
 };
@@ -72,7 +72,7 @@ export const useReplays = create<StoreState & StoreReducers>((set, get) => ({
   ...initialState,
 
   init: async (rootFolder, forceReload, currentFolder) => {
-    const { currentRoot, loadFolder, loadDirectoryList } = get();
+    const { currentRoot, processFolder, loadDirectoryList } = get();
     if (currentRoot === rootFolder && !forceReload) {
       return;
     }
@@ -89,7 +89,7 @@ export const useReplays = create<StoreState & StoreReducers>((set, get) => ({
 
     await Promise.all([
       loadDirectoryList(currentFolder ?? rootFolder),
-      loadFolder(currentFolder ?? rootFolder, true),
+      processFolder(currentFolder ?? rootFolder, true),
     ]);
   },
 
@@ -149,20 +149,21 @@ export const useReplays = create<StoreState & StoreReducers>((set, get) => ({
     );
   },
 
-  loadFolder: async (childPath, forceReload) => {
+  processFolder: async (childPath, forceReload) => {
     const { currentFolder, loading } = get();
 
     if (loading) {
       console.warn(
-        "A folder is already loading! Please wait for it to finish first."
+        "A folder is already being processed! Please wait for it to finish first."
       );
       return;
     }
 
+    const dbPath = path.join(remote.app.getPath("userData"), "db/test.db");
     const folderToLoad = childPath ?? currentFolder;
     if (currentFolder === folderToLoad && !forceReload) {
       console.warn(
-        `${currentFolder} is already loaded. Set forceReload to true to reload anyway.`
+        `${currentFolder} is already processed. Set forceReload to true to reload anyway.`
       );
       return;
     }
@@ -170,9 +171,11 @@ export const useReplays = create<StoreState & StoreReducers>((set, get) => ({
     set({ currentFolder: folderToLoad });
 
     set({ loading: true, progress: null });
+
     try {
-      const result = await loadReplayFolder(
+      const result = await processReplayFolder(
         folderToLoad,
+        dbPath,
         Comlink.proxy((current, total) => {
           set({ progress: { current, total } });
         })

@@ -1,0 +1,13 @@
+diff --git a/node_modules/bindings/bindings.js b/node_modules/bindings/bindings.js
+index 727413a..5ab8bf8 100644
+--- a/node_modules/bindings/bindings.js
++++ b/node_modules/bindings/bindings.js
+@@ -153,7 +153,7 @@ exports.getFileName = function getFileName(calling_file) {
+   Error.prepareStackTrace = function(e, st) {
+     for (var i = 0, l = st.length; i < l; i++) {
+       fileName = st[i].getFileName();
+-      if (fileName !== __filename) {
++      if (fileName && fileName !== __filename) {
+         if (calling_file) {
+           if (fileName !== calling_file) {
+             return;

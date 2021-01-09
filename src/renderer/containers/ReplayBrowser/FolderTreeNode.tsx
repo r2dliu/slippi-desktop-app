@@ -1,7 +1,7 @@
 import { useReplays } from "@/store/replays";
 import { FolderResult } from "common/replayBrowser";
 import React from "react";
-
+import { remote } from "electron";
 import IconButton from "@material-ui/core/IconButton";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -24,14 +24,15 @@ export const FolderTreeNode: React.FC<FolderTreeNodeProps> = ({
   collapsed,
 }) => {
   const loadDirectoryList = useReplays((store) => store.loadDirectoryList);
-  const loadFolder = useReplays((store) => store.loadFolder);
+  const processFolder = useReplays((store) => store.processFolder);
   const toggleFolder = useReplays((store) => store.toggleFolder);
   const currentFolder = useReplays((store) => store.currentFolder);
   const hasChildren = subdirectories.length > 0;
   const onClick = async () => {
     console.log(`loading directory: ${name}`);
+    // console.log(app.getAppPath());
     loadDirectoryList(fullPath);
-    loadFolder(fullPath);
+    processFolder(fullPath);
   };
   const isSelected = currentFolder === fullPath;
   const labelColor = isSelected ? colors.grayDark : "rgba(255, 255, 255, 0.5)";
