@@ -21,8 +21,10 @@ import { NotFoundView } from "./views/NotFoundView";
 import { SettingsView } from "./views/SettingsView";
 
 import { useApp } from "@/store/app";
+import { useSettings } from "@/store/settings";
 import { initializeFirebase } from "./lib/firebase";
 import Snackbar from "@material-ui/core/Snackbar";
+import { ipcRenderer } from "electron-better-ipc";
 
 const App: React.FC = () => {
   const initialized = useApp((state) => state.initialized);
@@ -55,6 +57,14 @@ const App: React.FC = () => {
 
     // Unsubscribe on unmount
     return unsubscribe;
+  }, []);
+
+  React.useEffect(() => {
+    // Notify main to start processing replays
+    const rootSlpPath =
+      useSettings((store) => store.settings.rootSlpPath) || undefined;
+    ipcRenderer.callMain("process_replays", rootSlpPath);
+    console.log(rootSlpPath);
   }, []);
 
   if (!initialized) {

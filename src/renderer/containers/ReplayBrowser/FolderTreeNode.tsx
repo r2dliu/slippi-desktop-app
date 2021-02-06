@@ -1,7 +1,6 @@
 import { useReplays } from "@/store/replays";
 import { FolderResult } from "common/replayBrowser";
 import React from "react";
-import { remote } from "electron";
 import IconButton from "@material-ui/core/IconButton";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -83,13 +82,6 @@ export const FolderTreeNode: React.FC<FolderTreeNodeProps> = ({
           primary={name}
         />
       </ListItem>
-      {subdirectories.length === 0 || collapsed ? null : (
-        <List dense={true} style={{ padding: 0 }}>
-          {subdirectories.map((f) => (
-            <FolderTreeNode nestLevel={nestLevel + 1} key={f.fullPath} {...f} />
-          ))}
-        </List>
-      )}
     </div>
   );
 };

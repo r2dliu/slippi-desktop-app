@@ -1,7 +1,7 @@
 import produce from "immer";
 import path from "path";
 import create from "zustand";
-
+import { ipcRenderer } from "electron-better-ipc";
 import { useSettings } from "../settings";
 import {
   FileResult,
@@ -10,10 +10,11 @@ import {
   generateSubFolderTree,
 } from "common/replayBrowser";
 import * as Comlink from "comlink";
+
 import { processReplayFolder } from "@/workers/fileProcessor.worker";
 import { calculateGameStats } from "@/workers/gameStats.worker";
 import { StatsType } from "@slippi/slippi-js";
-import { shell, remote } from "electron";
+import { shell } from "electron";
 
 type StoreState = {
   loading: boolean;
@@ -71,7 +72,7 @@ export const useReplays = create<StoreState & StoreReducers>((set, get) => ({
   // Set the initial state
   ...initialState,
 
-  init: async (rootFolder, forceReload, currentFolder) => {
+  init: async (rootFolder, forceReload) => {
     const { currentRoot, processFolder, loadDirectoryList } = get();
     if (currentRoot === rootFolder && !forceReload) {
       return;
@@ -88,8 +89,9 @@ export const useReplays = create<StoreState & StoreReducers>((set, get) => ({
     });
 
     await Promise.all([
-      loadDirectoryList(currentFolder ?? rootFolder),
-      processFolder(currentFolder ?? rootFolder, true),
+      loadDirectoryList(rootFolder),
+      ipcRenderer.callMain("get_replays", "unicorn"),
+      processFolder(rootFolder, true),
     ]);
   },
 
@@ -159,7 +161,6 @@ export const useReplays = create<StoreState & StoreReducers>((set, get) => ({
       return;
     }
 
-    const dbPath = path.join(remote.app.getPath("userData"), "db/test.db");
     const folderToLoad = childPath ?? currentFolder;
     if (currentFolder === folderToLoad && !forceReload) {
       console.warn(
@@ -175,7 +176,6 @@ export const useReplays = create<StoreState & StoreReducers>((set, get) => ({
     try {
       const result = await processReplayFolder(
         folderToLoad,
-        dbPath,
         Comlink.proxy((current, total) => {
           set({ progress: { current, total } });
         })

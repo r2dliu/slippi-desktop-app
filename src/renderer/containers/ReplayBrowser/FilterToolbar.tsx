@@ -52,7 +52,6 @@ export const FilterToolbar = React.forwardRef<
   const classes = useStyles();
   const init = useReplays((store) => store.init);
   const rootSlpPath = useSettings((store) => store.settings.rootSlpPath);
-  const currentFolder = useReplays((store) => store.currentFolder);
 
   React.useEffect(() => {
     if (!value.searchText) {
@@ -61,8 +60,8 @@ export const FilterToolbar = React.forwardRef<
   }, [value.searchText]);
 
   const refresh = React.useCallback(() => {
-    init(rootSlpPath, true, currentFolder);
-  }, [rootSlpPath, init, currentFolder]);
+    init(rootSlpPath, true);
+  }, [rootSlpPath, init]);
 
   const debounceChange = debounce((text: string) => {
     onChange({ searchText: text });

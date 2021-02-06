@@ -4,6 +4,7 @@ import { format as formatUrl } from "url";
 import contextMenu from "electron-context-menu";
 import { colors } from "common/colors";
 import { setupListeners } from "./listeners";
+import { ReplayProcessor } from "./replayProcessor";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -11,6 +12,7 @@ const isDevelopment = process.env.NODE_ENV !== "production";
 let mainWindow: BrowserWindow | null = null;
 
 function createMainWindow() {
+  console.log("creating main wwindow");
   const window = new BrowserWindow({
     show: false,
     width: 1100,
@@ -60,7 +62,7 @@ function createMainWindow() {
   });
 
   setupListeners();
-
+  new ReplayProcessor();
   return window;
 }
 

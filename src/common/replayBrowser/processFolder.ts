@@ -1,19 +1,12 @@
-import path from "path";
 import * as fs from "fs-extra";
-import Db from "better-sqlite3";
 import { FileLoadResult } from "./types";
 
 export async function processFolder(
   folder: string,
-  dbPath: string,
   callback: (current: number, total: number) => void
 ): Promise<FileLoadResult> {
   console.log("in process folder");
-  console.log("what", dbPath);
   try {
-    console.log(dbPath);
-    const db = new Db(dbPath, { verbose: console.log });
-    console.log(db);
   } catch (e) {
     console.log(e, "wtf");
   }
